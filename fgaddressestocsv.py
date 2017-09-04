@@ -32,8 +32,9 @@ option_0 = { 'name' : ('-i', '--input-file'), 'help' : '<INPUT_FILE>: Fortigate 
 option_1 = { 'name' : ('-o', '--output-file'), 'help' : '<OUTPUT_FILE>: output csv file (default \'./addresses-out.csv\')', 'default' : 'addresses-out.csv', 'nargs' : 1}
 option_2 = { 'name' : ('-n', '--newline'), 'help' : '<NEWLINE> : insert a newline between each address for better readability', 'action' : 'store_true', 'default' : False }
 option_3 = { 'name' : ('-s', '--skip-header'), 'help' : '<SKIP_HEADER> : do not print the csv header', 'action' : 'store_true', 'default' : False }
+option_4 = { 'name' : ('-S', '--split-ip-subnet'), 'help' : '<SPLIT_IP_SUBNET> : put ip address and subnet mask in seperate fields', 'action' : 'store_true', 'default' : False }
 
-options = [option_0, option_1, option_2, option_3]
+options = [option_0, option_1, option_2, option_3, option_4]
 
 # Handful patterns
 # -- Entering address definition block
@@ -50,6 +51,10 @@ p_address_name = re.compile('^\s*edit\s+"(?P<address_name>.*)"$', re.IGNORECASE)
 
 # -- Policy setting
 p_address_set = re.compile('^\s*set\s+(?P<address_key>\S+)\s+(?P<address_value>.*)$', re.IGNORECASE)
+
+def divide_subnet(subnet_field):
+	divide = subnet_field.split(' ')
+	return divide[0], divide[1]
 
 # Functions
 def parse(fd):
@@ -88,9 +93,16 @@ def parse(fd):
 				if p_address_set.search(line):
 					address_key = p_address_set.search(line).group('address_key')
 					if not(address_key in order_keys): order_keys.append(address_key)
+					if not('ip_addr' in order_keys): order_keys.append('ip_addr')
+					if not('subnet_mask' in order_keys): order_keys.append('subnet_mask')
+
 					
 					address_value = p_address_set.search(line).group('address_value').strip()
 					address_value = re.sub('["]', '', address_value)
+					if address_key == "subnet":
+						ip_addr, subnet_mask = divide_subnet(address_value)
+						address_elem['ip_addr'] = ip_addr
+						address_elem["subnet_mask"] = subnet_mask
 					
 					address_elem[address_key] = address_value
 				
