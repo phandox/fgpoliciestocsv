@@ -38,19 +38,19 @@ options = [option_0, option_1, option_2, option_3, option_4]
 
 # Handful patterns
 # -- Entering address definition block
-p_entering_address_block = re.compile('^\s*config firewall address$', re.IGNORECASE)
+p_entering_service_block = re.compile('^\s*config firewall address$', re.IGNORECASE)
 
 # -- Exiting address definition block
-p_exiting_address_block = re.compile('^end$', re.IGNORECASE)
+p_exiting_service_block = re.compile('^end$', re.IGNORECASE)
 
 # -- Commiting the current address definition and going to the next one
-p_address_next = re.compile('^next$', re.IGNORECASE)
+p_service_next = re.compile('^next$', re.IGNORECASE)
 
 # -- Policy number
-p_address_name = re.compile('^\s*edit\s+"(?P<address_name>.*)"$', re.IGNORECASE)
+p_service_name = re.compile('^\s*edit\s+"(?P<address_name>.*)"$', re.IGNORECASE)
 
 # -- Policy setting
-p_address_set = re.compile('^\s*set\s+(?P<address_key>\S+)\s+(?P<address_value>.*)$', re.IGNORECASE)
+p_service_setting = re.compile('^\s*set\s+(?P<address_key>\S+)\s+(?P<address_value>.*)$', re.IGNORECASE)
 
 def divide_subnet(subnet_field):
 	divide = subnet_field.split(' ')
@@ -65,7 +65,7 @@ def parse(fd):
 		@rtype:	return a list of addresses ( [ {'id' : '1', 'srcintf' : 'internal', ...}, {'id' : '2', 'srcintf' : 'external', ...}, ... ] )  
 				and the list of unique seen keys ['id', 'srcintf', 'dstintf', ...]
 	"""
-	global p_entering_address_block, p_exiting_address_block, p_address_next, p_address_name, p_address_set
+	global p_entering_service_block, p_exiting_service_block, p_service_next, p_service_name, p_service_setting
 	
 	in_address_block = False
 	
